@@ -1,0 +1,64 @@
+/* General page styling */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f8f8;
+}
+
+/* Main menu container */
+#listeArticles {
+    max-width: 800px;
+    margin: 50px auto;
+    background: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* Header section for the menu */
+.menu-header {
+    background-color: #ff6f61;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+
+.menu-header h1 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+/* Section for each group */
+.menu-section {
+    padding: 20px;
+}
+
+.menu-section h2 {
+    border-bottom: 2px solid #ff6f61;
+    padding-bottom: 5px;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    color: #333;
+    text-align: center;
+}
+
+/* Styling for individual menu items */
+.menu-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.menu-item span {
+    font-size: 1.1rem;
+}
+
+.menu-item .price {
+    color: #555;
+}
+
+hr.dashed {
+  border-right: 300px dashed #bbb;
+}
