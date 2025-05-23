@@ -54,7 +54,11 @@ class ArticleBD
 
             // Initialize the group if it doesn't exist
             if (!isset($groupedArticles[$groupName])) {
-                $groupedArticles[$groupName] = [];
+                $groupedArticles[$groupName] = [
+                    'ordrePage' => $data['ordrePage'],
+                    'ordreGroup' => $data['ordreGroup'],
+                    'articles' => [] // Initialize the articles array
+                ];
             }
 
             // Create an Article object
@@ -69,11 +73,12 @@ class ArticleBD
                 $data['ordreArticle']
             );
 
-            // Add the Article object to the group
-            $groupedArticles[$groupName][] = $article;
+            // Add the Article object to the articles array
+            $groupedArticles[$groupName]['articles'][] = $article;
         }
 
         return $groupedArticles;
+
     }
 
 
@@ -97,16 +102,20 @@ class ArticleBD
     public function getGroupedArticlesJSON()
     {
         $groupedArticles = $this->getAllByGroup();
-
+        // print_r($groupedArticles);
+        // exit;
         // Convert Article objects to JSON-friendly arrays
-        foreach ($groupedArticles as $groupName => &$articles) {
-            $articles = array_map(function ($article) {
+        foreach ($groupedArticles as $groupName => &$groupData) {
+            // Map the articles to JSON-friendly format
+            $groupData['articles'] = array_map(function ($article) {
                 return json_decode($article->toJSON(), true); // Use the toJSON method of the Article class
-            }, $articles);
+            }, $groupData['articles']);
         }
 
         return json_encode($groupedArticles, JSON_PRETTY_PRINT);
     }
+
+
 
 
 }

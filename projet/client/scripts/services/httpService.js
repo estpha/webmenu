@@ -10,16 +10,16 @@ export class HttpService {
   /*
   **  $.ajaxSetup permet de définir une fois un élément sans le refaire par la suite. Ici cela se fait l'error
   */
-  async centraliserErreurHttp(httpErrorCallbackFn) {
+  centraliserErreurHttp(httpErrorCallbackFn) {
     $.ajaxSetup({
       error: function (xhr, exception) {
         let msg;
-        if (xhr.status === 0) {
-          msg = "Pas d'accès à la ressource serveur demandée !";
-        } else if (xhr.status === 404) {
-          msg = "Page demandée non trouvée [404] !";
-        } else if (xhr.status === 500) {
-          msg = "Erreur interne sur le serveur [500] !";
+        if (xhr.status === 401) {
+          msg = "erreur : " + xhr.status + " vous n'êtes pas connecté";
+        } else if (xhr.status === 503) {
+          msg = "erreur : " + xhr.status + " une erreur s'est produite lors de la modification. Veuillez réessayer.";
+        } else if (xhr.status === 400) {
+          msg = "erreur : " + xhr.status + " Les données reçues sont vides.";
         } else if (exception === "parsererror") {
           msg = "Erreur de parcours dans le JSON !";
         } else if (exception === "timeout") {
@@ -34,36 +34,33 @@ export class HttpService {
     });
   }
 
-  async afficheArticlesParGroup(successCallback, errorCallback) {
+  afficheArticlesParGroup(successCallback) {
 		$.ajax({
 			type: "GET",
 			dataType: "json",
 			url: DISPLAY_URL,
 			data: 'action=getArticlesByGroup',
-			success: successCallback,
-			error: errorCallback,
+			success: successCallback
 		});
 	}
 
-  async getConf(successCallback, errorCallback) {
+  getConf(successCallback) {
 		$.ajax({
 			type: "GET",
 			dataType: "json",
 			url: CONFIG_URL,
 			data: 'action=getConf',
-			success: successCallback,
-			error: errorCallback,
+			success: successCallback
 		});
 	}
 
-  async afficheArticlesGestion(successCallback, errorCallback) {
+  afficheArticlesGestion(successCallback) {
 		$.ajax({
 			type: "GET",
 			dataType: "json",
 			url: MANAGE_URL,
 			data: 'action=getArticlesGestion',
-			success: successCallback,
-			error: errorCallback,
+			success: successCallback
 		});
 	}
 }

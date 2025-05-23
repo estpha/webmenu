@@ -171,7 +171,7 @@ class Article
     {
         $data = [
             'id' => $this->getId(),
-            'descritpion' => $this->getDescription(),
+            'description' => $this->getDescription(),
             'quantity'=> $this->getQuantity(),
             'soldout' => $this->isSoldout(),
             'price' => $this->getPrice(),

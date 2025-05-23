@@ -2,12 +2,12 @@
 // avec login et session, page admin, gestionMenu.php
 include_once('../services/SessionCheck.php');
 include_once('../services/ConfigBD.php');
+include_once('../services/ArticleBD.php');
 session_start();
 //créer SessionCheck
 
 $session = new SessionCheck;
 if (isset($_SERVER['REQUEST_METHOD'])) {
-
   if ($session->isConnected()) {
     if ($_SERVER['REQUEST_METHOD'] == 'GET') {
       if ($_GET['action'] == "getArticlesGestion") {
@@ -27,6 +27,8 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
     //     }
     //   }
     // }
+  } else {
+    http_response_code(401);
   }
 }
 ?>

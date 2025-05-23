@@ -32,11 +32,5 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
     $listeConf = new ConfigBD();
     echo $listeConf->getInJson();
   }
-  // if ($session->isConnected()) {
-  //   $listeLogin = new ConfigBD();
-  //   echo '<result>true</result>';
-  // } else {
-  //   http_response_code(401);
-  // }
 }
 ?>
