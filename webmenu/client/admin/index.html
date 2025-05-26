@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <title>Menu</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../stylesheets/main.css" />
+    <script type="text/javascript" src="../lib/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="module" src="../scripts/controllers/adminCtrl.js" defer></script>
+</head>
+
+<body>
+    <div class="conteneur">
+        <h1>Gestionnaire des articles</h1>
+        <button id="deconnect">Déconnexion</button>
+        <div class="menu-container">
+            <select name="groupe" id="groupes"></select>
+            <div class="menu">
+                <div id="listeArticlesModif"></div>
+            </div>
+        </div>
+        <div class="conteneur-ajout-et-modif">
+            <button id="ajout">Ajouter un article</button>
+            <div id="ajout-et-modif"></div>
+        </div>
+    </div>
+</body>
+
+</html>

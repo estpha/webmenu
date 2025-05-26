@@ -13,6 +13,7 @@ $().ready(function () {
 export default class IndexCtrl {
     #uniteDArgent;
     #rechargementPage;
+    #premierPassage = true;
 
     constructor() {
         this.http = new HttpService();
@@ -21,8 +22,8 @@ export default class IndexCtrl {
     }
 
     init() {
-        this.http.getConf((data) => this.chargerConfigSuccess(data));
-        this.http.afficheArticlesParGroup((data) => this.chargerArticlesSuccess(data));
+        console.log("load init");
+        this.http.getConf((data) => this.chargerConfig(data));
     }
 
     afficherErreurHttp(msg) {
@@ -30,11 +31,12 @@ export default class IndexCtrl {
     }
 
 
-    chargerArticlesSuccess(data, text, jqXHR) {
+    chargerArticles(data, text, jqXHR) {
+        console.log("articles lus");
         let listeArticles = $("#listeArticles");
-        listeArticles.empty(); // Clear the existing content
 
-        console.log(data);
+        // $("#listeArticles").text("");
+
 
         // Step 1: Organize groups by ordrePage
         let pagesGroupedByOrder = {};
@@ -94,33 +96,47 @@ export default class IndexCtrl {
 
             pageSection.appendTo(listeArticles);
         });
+        this.demarrageAnim();
+    }
 
-        // Initialize the slider for each page
-        $("#listeArticles").slick({
+    demarrageAnim() {
+        const listeArticles = $("#listeArticles");
+
+        // Destroy any existing instance of Slick
+        if (listeArticles.hasClass("slick-initialized")) {
+            listeArticles.slick("unslick");
+        }
+
+        // Re-initialize the Slick slider
+        listeArticles.slick({
             slidesToShow: 1,
             slidesToScroll: 1,
             autoplay: true,
-            autoplaySpeed: this.#rechargementPage,
+            autoplaySpeed: this.#rechargementPage || 1000, // Configured or default speed
             speed: 800,
             infinite: false,
-        }).on('afterChange', function (event, slick, currentSlide) {
+        }).on('afterChange', (event, slick, currentSlide) => {
             // Check if the current slide is the last slide
             if (currentSlide === slick.slideCount - 1) {
-                // Wait for the animation to complete, then reload the page
                 setTimeout(() => {
-                    location.reload();
-                }, 5000); // Adjust timeout to match the desired delay
-            }
-        }).on('beforeChange', function (event, slick, currentSlide, nextSlide) {
-            // Prevent animation from starting if it's the last slide
-            if (nextSlide === slick.slideCount - 1) {
-                $(this).slick('slickPause'); // Pause the slick animation to avoid the next transition
+                    this.resetAndReload(); // Call method to reset and reload
+                }, 1000); // Adjust timeout to match desired delay
             }
         });
     }
 
+    resetAndReload() {
+        const listeArticles = $("#listeArticles");
 
-    chargerConfigSuccess(data, text, jqXHR) {
+        // Clear the content and re-fetch configuration and articles
+        listeArticles.empty(); // Remove all existing content
+        this.init(); // Re-fetch config and articles
+    }
+
+
+
+    chargerConfig(data, text, jqXHR) {
+        console.log("config lue");
         let parsedData = typeof data === "string" ? JSON.parse(data) : data;
 
         if (Array.isArray(parsedData)) {
@@ -132,16 +148,6 @@ export default class IndexCtrl {
             this.#uniteDArgent = parsedData.moneyUnity;
             this.#rechargementPage = parsedData.refreshTime;
         }
+        this.http.afficheArticlesParGroup((data) => this.chargerArticles(data));
     }
-
-    // callbackError(request, status, error) {
-    //     if (request.status === 401) {
-    //         location.replace("../client/login.html");
-    //         alert("erreur : " + request.status + " vous n'êtes pas connecté");
-    //     } else if (request.status === 503) {
-    //         alert("erreur : " + request.status + " une erreur s'est produite lors de la modification. Veuillez réessayer.");
-    //     } else {
-    //         alert("une erreur inconnue est survenue. Erreur :" + error + " Request : " + request + " Status : " + status);
-    //     }
-    // }
 }

@@ -81,9 +81,6 @@ class ArticleBD
 
     }
 
-
-
-
     /**
      * méthode pour mettre en forme en JSON les articles
      */
@@ -115,8 +112,29 @@ class ArticleBD
         return json_encode($groupedArticles, JSON_PRETTY_PRINT);
     }
 
+    public function addArticle($description, $quantite, $prix, $groupe)
+    {
+        $escapedNom = htmlspecialchars($description, ENT_QUOTES, 'UTF-8');
+        $escapedDescription = htmlspecialchars($quantite, ENT_QUOTES, 'UTF-8');
 
+        $connect = ServicesBD::getInstance();
 
+        $sql = "INSERT INTO menu_display.article (description, quantity, price, group_id, `order`)
+            SELECT :description, :quantite, :prix, menu_display.group.id, 
+                   COALESCE(MAX(menu_display.article.`order`), 0) + 10
+            FROM menu_display.group
+            INNER JOIN menu_display.article ON menu_display.group.id = menu_display.article.group_id
+            WHERE menu_display.group.group = :groupe";
 
+        $params = ['description' => $description, 'quantite' => $quantite, 'prix' => $prix, 'groupe' => $groupe];
+        $resultat = $connect->executeQuery($sql, $params);
+        if ($resultat === true) {
+            $data = array('result' => 'true');
+            echo json_encode($data);
+        } else {
+            $data = array('result' => 'false');
+            echo json_encode($data);
+        }
+    }
 }
 ?>

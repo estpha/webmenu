@@ -10,17 +10,12 @@ class ConfigBD
      */
     public function checkLogin($pwd)
     {
-        $sql = "SELECT password FROM configuration WHERE password = :password";
-        $params = array(":mdp" => $pwd);
+        $sql = "SELECT password FROM configuration where password = :mdp";
+        $params = array("mdp" => $pwd);
         $connect = ServicesBD::getInstance();
         $mdpResult = $connect->executeQuery($sql, $params);
-        if ($mdpResult !== false && $mdpResult->rowCount() == 1) {
-            $result = $mdpResult->fetch(PDO::FETCH_ASSOC);
-            if ($pwd === $result['password']) {
-                return true;
-            } else {
-                return false;
-            }
+        if ($mdpResult->rowCount() == 1) {
+            return true;
         } else {
             return false;
         }
@@ -38,11 +33,20 @@ class ConfigBD
         $connect = ServicesBD::getInstance();
         $configs = $connect->selectQuery($sql, $params);
         foreach ($configs as $data) {
-            $config = new Config($data['id'], $data['refresh_time'], $data['money_unity'], 
-                                $data['password'], $data['group_font'], $data['group_size'], 
-                                $data['group_color'], $data['article_font'], $data['article_size'],
-                                $data['article_color'], $data['logo1'], $data['logo2']
-                            );
+            $config = new Config(
+                $data['id'],
+                $data['refresh_time'],
+                $data['money_unity'],
+                $data['password'],
+                $data['group_font'],
+                $data['group_size'],
+                $data['group_color'],
+                $data['article_font'],
+                $data['article_size'],
+                $data['article_color'],
+                $data['logo1'],
+                $data['logo2']
+            );
             $listeConfigs[$count++] = $config;
         }
         return $listeConfigs;
@@ -58,7 +62,7 @@ class ConfigBD
         foreach ($listeConfigs as $config) {
             $result[] = json_decode($config->toJson(), true);
         }
-         return json_encode($result, JSON_PRETTY_PRINT);
+        return json_encode($result, JSON_PRETTY_PRINT);
     }
 }
 ?>
