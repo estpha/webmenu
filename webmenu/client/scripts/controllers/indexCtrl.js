@@ -1,28 +1,33 @@
 import { HttpService } from "../services/httpService.js";
+const MD5 = function (d) { var r = M(V(Y(X(d), 8 * d.length))); return r.toLowerCase() }; function M(d) { for (var _, m = "0123456789ABCDEF", f = "", r = 0; r < d.length; r++)_ = d.charCodeAt(r), f += m.charAt(_ >>> 4 & 15) + m.charAt(15 & _); return f } function X(d) { for (var _ = Array(d.length >> 2), m = 0; m < _.length; m++)_[m] = 0; for (m = 0; m < 8 * d.length; m += 8)_[m >> 5] |= (255 & d.charCodeAt(m / 8)) << m % 32; return _ } function V(d) { for (var _ = "", m = 0; m < 32 * d.length; m += 8)_ += String.fromCharCode(d[m >> 5] >>> m % 32 & 255); return _ } function Y(d, _) { d[_ >> 5] |= 128 << _ % 32, d[14 + (_ + 64 >>> 9 << 4)] = _; for (var m = 1732584193, f = -271733879, r = -1732584194, i = 271733878, n = 0; n < d.length; n += 16) { var h = m, t = f, g = r, e = i; f = md5_ii(f = md5_ii(f = md5_ii(f = md5_ii(f = md5_hh(f = md5_hh(f = md5_hh(f = md5_hh(f = md5_gg(f = md5_gg(f = md5_gg(f = md5_gg(f = md5_ff(f = md5_ff(f = md5_ff(f = md5_ff(f, r = md5_ff(r, i = md5_ff(i, m = md5_ff(m, f, r, i, d[n + 0], 7, -680876936), f, r, d[n + 1], 12, -389564586), m, f, d[n + 2], 17, 606105819), i, m, d[n + 3], 22, -1044525330), r = md5_ff(r, i = md5_ff(i, m = md5_ff(m, f, r, i, d[n + 4], 7, -176418897), f, r, d[n + 5], 12, 1200080426), m, f, d[n + 6], 17, -1473231341), i, m, d[n + 7], 22, -45705983), r = md5_ff(r, i = md5_ff(i, m = md5_ff(m, f, r, i, d[n + 8], 7, 1770035416), f, r, d[n + 9], 12, -1958414417), m, f, d[n + 10], 17, -42063), i, m, d[n + 11], 22, -1990404162), r = md5_ff(r, i = md5_ff(i, m = md5_ff(m, f, r, i, d[n + 12], 7, 1804603682), f, r, d[n + 13], 12, -40341101), m, f, d[n + 14], 17, -1502002290), i, m, d[n + 15], 22, 1236535329), r = md5_gg(r, i = md5_gg(i, m = md5_gg(m, f, r, i, d[n + 1], 5, -165796510), f, r, d[n + 6], 9, -1069501632), m, f, d[n + 11], 14, 643717713), i, m, d[n + 0], 20, -373897302), r = md5_gg(r, i = md5_gg(i, m = md5_gg(m, f, r, i, d[n + 5], 5, -701558691), f, r, d[n + 10], 9, 38016083), m, f, d[n + 15], 14, -660478335), i, m, d[n + 4], 20, -405537848), r = md5_gg(r, i = md5_gg(i, m = md5_gg(m, f, r, i, d[n + 9], 5, 568446438), f, r, d[n + 14], 9, -1019803690), m, f, d[n + 3], 14, -187363961), i, m, d[n + 8], 20, 1163531501), r = md5_gg(r, i = md5_gg(i, m = md5_gg(m, f, r, i, d[n + 13], 5, -1444681467), f, r, d[n + 2], 9, -51403784), m, f, d[n + 7], 14, 1735328473), i, m, d[n + 12], 20, -1926607734), r = md5_hh(r, i = md5_hh(i, m = md5_hh(m, f, r, i, d[n + 5], 4, -378558), f, r, d[n + 8], 11, -2022574463), m, f, d[n + 11], 16, 1839030562), i, m, d[n + 14], 23, -35309556), r = md5_hh(r, i = md5_hh(i, m = md5_hh(m, f, r, i, d[n + 1], 4, -1530992060), f, r, d[n + 4], 11, 1272893353), m, f, d[n + 7], 16, -155497632), i, m, d[n + 10], 23, -1094730640), r = md5_hh(r, i = md5_hh(i, m = md5_hh(m, f, r, i, d[n + 13], 4, 681279174), f, r, d[n + 0], 11, -358537222), m, f, d[n + 3], 16, -722521979), i, m, d[n + 6], 23, 76029189), r = md5_hh(r, i = md5_hh(i, m = md5_hh(m, f, r, i, d[n + 9], 4, -640364487), f, r, d[n + 12], 11, -421815835), m, f, d[n + 15], 16, 530742520), i, m, d[n + 2], 23, -995338651), r = md5_ii(r, i = md5_ii(i, m = md5_ii(m, f, r, i, d[n + 0], 6, -198630844), f, r, d[n + 7], 10, 1126891415), m, f, d[n + 14], 15, -1416354905), i, m, d[n + 5], 21, -57434055), r = md5_ii(r, i = md5_ii(i, m = md5_ii(m, f, r, i, d[n + 12], 6, 1700485571), f, r, d[n + 3], 10, -1894986606), m, f, d[n + 10], 15, -1051523), i, m, d[n + 1], 21, -2054922799), r = md5_ii(r, i = md5_ii(i, m = md5_ii(m, f, r, i, d[n + 8], 6, 1873313359), f, r, d[n + 15], 10, -30611744), m, f, d[n + 6], 15, -1560198380), i, m, d[n + 13], 21, 1309151649), r = md5_ii(r, i = md5_ii(i, m = md5_ii(m, f, r, i, d[n + 4], 6, -145523070), f, r, d[n + 11], 10, -1120210379), m, f, d[n + 2], 15, 718787259), i, m, d[n + 9], 21, -343485551), m = safe_add(m, h), f = safe_add(f, t), r = safe_add(r, g), i = safe_add(i, e) } return Array(m, f, r, i) } function md5_cmn(d, _, m, f, r, i) { return safe_add(bit_rol(safe_add(safe_add(_, d), safe_add(f, i)), r), m) } function md5_ff(d, _, m, f, r, i, n) { return md5_cmn(_ & m | ~_ & f, d, _, r, i, n) } function md5_gg(d, _, m, f, r, i, n) { return md5_cmn(_ & f | m & ~f, d, _, r, i, n) } function md5_hh(d, _, m, f, r, i, n) { return md5_cmn(_ ^ m ^ f, d, _, r, i, n) } function md5_ii(d, _, m, f, r, i, n) { return md5_cmn(m ^ (_ | ~f), d, _, r, i, n) } function safe_add(d, _) { var m = (65535 & d) + (65535 & _); return (d >> 16) + (_ >> 16) + (m >> 16) << 16 | 65535 & m } function bit_rol(d, _) { return d << _ | d >>> 32 - _ }
 
-let indexCtrl; // Declare globally if needed
+let indexCtrl; // déclaration de la variable globale
 
 $().ready(function () {
-    // Initialize global variables
-    indexCtrl = new IndexCtrl(); // Main controller
+    // initialisation de la variable globale
+    indexCtrl = new IndexCtrl();
 });
 
 /**
- * Classe contrôleur de la page d'accueil.
+ * Classe contrôleur de la page d'accueil de l'affichage du menu.
  */
 export default class IndexCtrl {
+    // variables privées utiles à la récupération des infos de la configuration
     #uniteDArgent;
     #rechargementPage;
-    #premierPassage = true;
+    #empreinteMD5 = "";
 
     constructor() {
+        // initialisation de la variable pour les services http
         this.http = new HttpService();
+        // appel de la méthode pour la gestion des erreurs
         this.http.centraliserErreurHttp((msg) => this.afficherErreurHttp(msg));
+        // appel de la méthode d'initialisation de la classe
         this.init();
     }
 
     init() {
-        console.log("load init");
+        // GET de la configuration de la BD
         this.http.getConf((data) => this.chargerConfig(data));
     }
 
@@ -32,52 +37,76 @@ export default class IndexCtrl {
 
 
     chargerArticles(data, text, jqXHR) {
-        console.log("articles lus");
+        // création d'une empreinte md5 pour vérifier si les données on été modifiées
+        let md5 = MD5(JSON.stringify(data));
+
+        // test de l'empreinte pour voir si elle a changé
+        if (md5 == this.#empreinteMD5) {
+            return;
+        }
+        // si l'empreinte a changé, la variable privée empreinte est modifié pour correspondre à la nouvelle empreinte
+        this.#empreinteMD5 = md5;
+
         let listeArticles = $("#listeArticles");
 
-        // $("#listeArticles").text("");
+        // vidage de la liste des articles
+        listeArticles.empty();
 
-
-        // Step 1: Organize groups by ordrePage
+        // organisation des groupes par page
+        // initialisation d'un objet pour regrouper les groupes par numéro de page
         let pagesGroupedByOrder = {};
-        Object.keys(data).forEach(groupName => {
-            const { ordrePage, ordreGroup, articles } = data[groupName];
 
+        // parcours de chaque groupe dans les données fournies
+        Object.keys(data).forEach(groupName => {
+            const { ordrePage, ordreGroup, articles } = data[groupName]; // extraction des données utiles
+
+            // si aucun groupe n'existe encore pour cette page, initialiser un tableau vide
             if (!pagesGroupedByOrder[ordrePage]) {
                 pagesGroupedByOrder[ordrePage] = [];
             }
 
-            // Add the group with its order metadata
+            // ajout du groupe actuel dans le tableau correspondant à la page
             pagesGroupedByOrder[ordrePage].push({
+                // nom du groupe
                 groupName,
-                groupOrder: parseInt(ordreGroup, 10), // Ensure numeric sorting
+                // convertion de l'ordre en nombre pour un tri correct
+                groupOrder: parseInt(ordreGroup, 10),
+                // articles correspondant à ce groupe
                 articles
             });
         });
 
-        // Step 2: Iterate through pages and render groups in groupOrder order
-        Object.keys(pagesGroupedByOrder).sort((pageA, pageB) => pageA - pageB).forEach(pageOrder => {
-            // Sort groups within the page by groupOrder
-            pagesGroupedByOrder[pageOrder].sort((groupA, groupB) => groupA.groupOrder - groupB.groupOrder);
 
-            // Create a container for the page
-            let pageSection = $(`<div class="page-section" data-ordre-page="${pageOrder}"></div>`);
 
-            pagesGroupedByOrder[pageOrder].forEach(group => {
-                const { groupName, articles } = group;
+        // parcours des pages dans l'ordre croissant
+        Object.keys(pagesGroupedByOrder)
+            .sort((pageA, pageB) => pageA - pageB) // tri des pages par ordre croissant
+            .forEach(pageOrder => {
 
-                // Create group section
-                let groupSection = `
+                // tri des groupes dans chaque page par ordre croissant
+                pagesGroupedByOrder[pageOrder].sort((groupA, groupB) => groupA.groupOrder - groupB.groupOrder);
+
+                // création d'un conteneur pour la section de la page
+                let pageSection = $(`<div class="page-section" data-ordre-page="${pageOrder}"></div>`);
+
+                // parcours des groupes de la page
+                pagesGroupedByOrder[pageOrder].forEach(group => {
+                    // déstructuration pour accéder aux données du groupe
+                    const { groupName, articles } = group;
+
+                    // création de la section HTML pour le groupe
+                    let groupSection = `
                 <div class="menu-section" data-ordre-page="${pageOrder}" data-ordre-group="${group.groupOrder}">
                     <h2>${groupName}</h2>
                     <table class="menu-items"></table>
                 </div>`;
-                let groupElement = $(groupSection);
-                let menuItemsContainer = groupElement.find(".menu-items");
+                    let groupElement = $(groupSection); // conversion en élément jQuery
+                    let menuItemsContainer = groupElement.find(".menu-items"); // Sélection du conteneur pour les articles
 
-                // Render articles within the group
-                articles.forEach(article => {
-                    let articleHtml = `
+                    // parcours des articles du groupe
+                    articles.forEach(article => {
+                        // génération du HTML pour chaque article
+                        let articleHtml = `
                     <tr class="menu-item">            
                         <td class="article-et-quantite">
                             <span class="description">${article.description}</span>
@@ -88,66 +117,72 @@ export default class IndexCtrl {
                             <span class="price">${article.price} ${this.#uniteDArgent}</span>
                         </td>                    
                     </tr>`;
-                    $(articleHtml).appendTo(menuItemsContainer);
+                        $(articleHtml).appendTo(menuItemsContainer); // ajout de l'article au conteneur
+                    });
+
+                    // ajout de la section du groupe à la section de la page
+                    groupElement.appendTo(pageSection);
                 });
 
-                groupElement.appendTo(pageSection);
+                // ajout de la section de la page à la liste des articles
+                pageSection.appendTo(listeArticles);
             });
 
-            pageSection.appendTo(listeArticles);
-        });
+        // démarrage de l'animation
         this.demarrageAnim();
+
     }
 
     demarrageAnim() {
         const listeArticles = $("#listeArticles");
 
-        // Destroy any existing instance of Slick
+        // destruction de toute instance éxistante de slick
         if (listeArticles.hasClass("slick-initialized")) {
             listeArticles.slick("unslick");
         }
 
-        // Re-initialize the Slick slider
+        // réinitialisation de l'animation
         listeArticles.slick({
             slidesToShow: 1,
             slidesToScroll: 1,
             autoplay: true,
-            autoplaySpeed: this.#rechargementPage || 1000, // Configured or default speed
-            speed: 800,
-            infinite: false,
+            autoplaySpeed: this.#rechargementPage,
+            speed: 800
         }).on('afterChange', (event, slick, currentSlide) => {
-            // Check if the current slide is the last slide
+            // check si la slide correspond à la dernière
             if (currentSlide === slick.slideCount - 1) {
                 setTimeout(() => {
-                    this.resetAndReload(); // Call method to reset and reload
-                }, 1000); // Adjust timeout to match desired delay
+                    this.resetAndReload(); // appel de la méthode pour recharger la configuration et les articles
+                }, this.#rechargementPage); // ajustement du timeout pour correspondre aux autres timeout
             }
         });
     }
 
     resetAndReload() {
-        const listeArticles = $("#listeArticles");
-
-        // Clear the content and re-fetch configuration and articles
-        listeArticles.empty(); // Remove all existing content
-        this.init(); // Re-fetch config and articles
+        this.init(); // rechargement des données
     }
 
 
 
     chargerConfig(data, text, jqXHR) {
-        console.log("config lue");
+        // analyse des données reçues, conversion JSON si besoin
         let parsedData = typeof data === "string" ? JSON.parse(data) : data;
 
+        // vérification si les données analysées sont un tableau
         if (Array.isArray(parsedData)) {
             parsedData.forEach(item => {
-                this.#uniteDArgent = item.moneyUnity;
-                this.#rechargementPage = item.refreshTime;
+                // mise à jour des propriétés depuis chaque élément du tableau
+                this.#uniteDArgent = item.moneyUnity; // unité monétaire
+                this.#rechargementPage = item.refreshTime; // temps de rafraîchissement
             });
         } else {
-            this.#uniteDArgent = parsedData.moneyUnity;
-            this.#rechargementPage = parsedData.refreshTime;
+            // si ce n'est pas un tableau, on suppose qu'il s'agit d'un objet unique
+            this.#uniteDArgent = parsedData.moneyUnity; // unité monétaire
+            this.#rechargementPage = parsedData.refreshTime; // temps de rafraîchissement
         }
+
+        // appel de la méthode pour charger les articles
         this.http.afficheArticlesParGroup((data) => this.chargerArticles(data));
     }
+
 }

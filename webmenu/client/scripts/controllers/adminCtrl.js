@@ -1,21 +1,30 @@
 import { HttpService } from "../services/httpService.js";
 
-let adminCtrl; // Declare globally if needed
+let adminCtrl; // déclaration de la variable globale
 
 $().ready(function () {
-    // Initialize global variables
-    adminCtrl = new AdminCtrl(); // Main controller
+    // initialisation de la variable globale
+    adminCtrl = new AdminCtrl();
 });
 
+/**
+ * Classe contrôleur de la page d'accueil de la gestion d'articles.
+ */
 export default class AdminCtrl {
+    #listeArticles;
+
     constructor() {
+        // initialisation de la variable pour les services http
         this.http = new HttpService();
+        // appel de la méthode pour la gestion des erreurs
         this.http.centraliserErreurHttp((msg) => this.afficherErreurHttp(msg));
+        // appel de la méthode d'initialisation de la classe
         this.init();
     }
 
+    // méthode d'initialisation de la classe
     init() {
-        console.log("AdminCtrl initialisé");
+        // popup de login pour accéder à la page
         Swal.fire({
             title: "Entrer le mot de passe :",
             input: "text",
@@ -27,7 +36,7 @@ export default class AdminCtrl {
             confirmButtonText: "Connexion",
             showLoaderOnConfirm: true,
             preConfirm: async (result) => {
-                this.http.connect(result, (data) => this.connectSuccess(data));
+                this.http.connect(result, (data) => this.connexion(data));
             }
         });
     }
@@ -36,63 +45,111 @@ export default class AdminCtrl {
         alert(msg);
     }
 
-    chargerArticlesSuccess(data, text, jqXHR) {
-        console.log("Received data:", data);
+    // méthode de connexion appelé pour le login
+    connexion(data) {
+        // une fois l'utilisateur connecté, l'affichage des articles est appelé        
+        this.http.afficheArticlesGestion((data) => this.chargerArticles(data));
 
-        const listeArticles = $("#listeArticlesModif");
-        const listeGroupes = $("#groupes");
+        let btnDeconnex = $("#deconnect");
+        let btnAjout = $("#ajout");
+        let champsModifAjout = $("#ajout-et-modif");
 
-        // Clear previous entries
-        listeArticles.empty();
-        listeGroupes.empty();
-
-        if (!data || Object.keys(data).length === 0) {
-            console.warn("No groups received. Check the backend response.");
-            return;
-        }
-
-        // Populate groups in the select
-        for (const groupName in data) {
-            const groupData = data[groupName];
-
-            // Add option with group name as value and set an ID attribute directly using the group name
-            const option = new Option(groupName, groupName);
-            option.id = groupName; // Keep the name as it is for the ID
-            listeGroupes.append(option);
-        }
-
-        // Event listener to load articles on group selection
-        listeGroupes.off("change").on("change", () => {
-            const selectedGroup = listeGroupes.val();
-            this.afficheArticleParGrp(selectedGroup, data, listeArticles);
+        // écouteur sur le bouton de deconnexion
+        btnDeconnex.on("click", () => {
+            // méthode de déconnexion
+            this.http.disconnect((data) => this.déconnexion(data));
         });
 
-        // Load articles for the first group by default
-        const firstGroup = Object.keys(data)[0];
-        if (firstGroup) {
-            listeGroupes.val(firstGroup);
-            this.afficheArticleParGrp(firstGroup, data, listeArticles);
+        // écouteur sur le bouton d'ajout d'un article
+        btnAjout.on("click", () => {
+            // changement de la valeur du bouton d'ajout
+            btnAjout.replaceWith(`<button id="sauverArticle">Sauver l'article</button>`);
+
+            // ajout au bas de la page des différents champs utiles à l'ajout de l'article
+            let ajoutModif = `
+                <label>Description : </label>
+                <input id="description-ajout" type="text" placeholder="description"/>
+                <label>Quantité : </label>
+                <input id="quantite-ajout" type="text" placeholder="quantité"/>
+                <label>Prix : </label>
+                <input id="prix-ajout" type="text" placeholder="prix"/>
+                <label>Ordre de l'article dans la liste : </label>
+                <input id="ordre-ajout" type="number"/>                
+            `;
+            champsModifAjout.append(ajoutModif);
+        });
+
+        // écouteur sur le bouton de sauvegarde d'un article
+        // appelé comme ça car il a été ajouté dynamiquement
+        $(document).on("click", "#sauverArticle", () => {
+            // récupération des valeurs insérées dans les input et la valeur du groupe sélectionné
+            let description = $("#description-ajout").val();
+            let quantite = $("#quantite-ajout").val();
+            let prix = $("#prix-ajout").val();
+            let ordre = $("#ordre-ajout").val();
+            let groupe = $("#groupes").val();
+
+            // appel de la méthode d'ajout dans la base de données
+            this.http.ajouterArticle(description, quantite, prix, groupe, ordre, (data) => this.ajoutArticle(data));
+        });
+
+    }
+
+    chargerGrp(data) {
+        console.log(data);
+        const listeGroupes = $("#groupes");
+        listeGroupes.empty(); // Clear the existing options
+
+        // Default to the first group in the data
+        const firstGroup = data[0]?.id; // Use the first group's ID if it exists
+        const defaultGroupId = firstGroup || null; // Fallback to null if no groups
+
+        // Populate the select with group options
+        data.forEach((group) => {
+            let isSelected = group.id === defaultGroupId ? "selected" : ""; // Mark the default group as selected
+            let optionHtml = `<option value="${group.id}" ${isSelected}>${group.name}</option>`;
+            listeGroupes.append(optionHtml);
+        });
+
+        // Set the dropdown value to the default group
+        if (defaultGroupId) {
+            listeGroupes.val(defaultGroupId);
         }
+
+        // Load articles for the default group
+        if (defaultGroupId) {
+            this.chargerArticlesParGrp(defaultGroupId);
+        }
+
+        // Add an event listener to fetch articles when a group is selected
+        listeGroupes.on("change", () => {
+            const selectedGroupId = listeGroupes.val(); // Get the selected group's ID
+            this.chargerArticlesParGrp(selectedGroupId);
+        });
     }
 
 
 
-    // Helper function to display articles for the selected group
-    afficheArticleParGrp(groupName, groupedData) {
+    chargerArticles(data) {
+        this.#listeArticles = data;
+        this.http.afficheGrp((data) => this.chargerGrp(data));
+    }
 
-        const groupData = groupedData[groupName];
-        if (!groupData) {
-            return;
-        }
-        const listeArticles = $("#listeArticlesModif");
-        listeArticles.empty(); // Clear current articles
+    chargerArticlesParGrp(groupId) {
+        const listeArticlesVue = $("#listeArticlesModif");
+        listeArticlesVue.empty();
 
-        let menu = $(".menu");
+        // If a groupId is provided, filter articles based on it; otherwise, show all articles
+        const filteredArticles = groupId
+            ? this.#listeArticles.filter(article => article.group === groupId)
+            : this.#listeArticles;
 
-        groupData.articles.forEach((article) => {
-            let articleHtml = `
+        // Populate the list of articles
+        filteredArticles.forEach((article) => {
+            const articleHtml = `
             <tr class="menu-item">            
                 <td class="article-et-quantite">
+                    <span class="ordre">${article.order}</span>
                     <span class="description">${article.description}</span>
                     <span class="quantite">${article.quantity}</span>
                 </td>    
@@ -101,56 +158,20 @@ export default class AdminCtrl {
                     <span class="price">${article.price}</span>
                 </td>                    
             </tr>`;
-            listeArticles.append(articleHtml);
+            listeArticlesVue.append(articleHtml);
         });
     }
 
-    connectSuccess(data) {
-        this.http.afficheArticlesGestion((data) => this.chargerArticlesSuccess(data));
-
-        let btnDeconnex = $("#deconnect");
-        let btnAjout = $("#ajout");
-        let champsModifAjout = $("#ajout-et-modif");
-        let btnSauver = $("#sauverArticle");
-
-        btnDeconnex.on("click", () => {
-            this.http.disconnect((data) => this.disconnectSuccess(data));
-        });
-
-        btnAjout.on("click", () => {
-            btnAjout.replaceWith(`<button id="sauverArticle">Sauver l'article</button>`);
-
-            let ajoutModif = `
-                <label>Description : </label>
-                <input id="description" type="text" placeholder="description"/>
-                <label>Quantité : </label>
-                <input id="quantite" type="text" placeholder="quantité"/>
-                <label>Prix : </label>
-                <input id="prix" type="text" placeholder="prix"/>                
-            `;
-            champsModifAjout.append(ajoutModif);
-        });
-
-        // Use event delegation for dynamically added elements
-        $(document).on("click", "#sauverArticle", () => {
-            console.log("Sauvegarde en cours");
-            let description = $("#description").val();
-            let quantite = $("#quantite").val();
-            let prix = $("#prix").val();
-            let groupe = $("#groupes").val(); // Get the selected option value from the select element with id 'groupes'
-
-            this.http.ajouterArticle(description, quantite, prix, groupe, (data) => this.ajoutArticle(data)); // Pass the group to the function
-        });
-
-    }
-
-    disconnectSuccess(data) {
+    déconnexion(data) {
+        // en cas de déconnexion, l'utilisateur est renvoyé à l'affichage du menu
         location.replace("../index.html");
     }
+
     ajoutArticle(data) {
+        // à faire
         if (data) {
             console.log("Ajout OK");
-        }else{
+        } else {
             console.log("Ajout KO");
         }
     }

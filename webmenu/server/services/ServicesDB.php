@@ -1,5 +1,5 @@
 <?php
-class ServicesBD
+class ServicesDB
 {
   private static $connexion;
   private $pdo;

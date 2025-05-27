@@ -1,8 +1,8 @@
 <?php
-class Article
+class Group
 {
     private $id;
-    private $group;
+    private $name;
     private $page;
     private $order;
     private $color;
@@ -11,17 +11,11 @@ class Article
      * constructeur du beans boisson
      * @param {type} Integer
      * @param {type} String
-     * @param {type} Integer
-     * @param {type} Integer
-     * @param {type} String
      */
-    public function __construct($id, $group, $page, $order, $color)
+    public function __construct($id, $name)
     {
         $this->id = $id;
-        $this->group = $group;
-        $this->page = $page;
-        $this->order = $order;
-        $this->color = $color;
+        $this->name = $name;
     }
 
     /**
@@ -35,9 +29,9 @@ class Article
     /**
      * getter du nom du groupe
      */
-    public function getGroup()
+    public function getName()
     {
-        return $this->group;
+        return $this->name;
     }
 
     /**
@@ -69,9 +63,9 @@ class Article
      * @param {type} String
      * @return void
      */
-    public function setGroup($group)
+    public function setName($name)
     {
-        $this->group = $group;
+        $this->name = $name;
     }
 
     /**
@@ -109,14 +103,10 @@ class Article
      */
     public function toJSON()
     {
-        $data = [
+        return  [
             'id' => $this->getId(),
-            'group' => $this->getGroup(),
-            'page' => $this->getPage(),
-            'order' => $this->getOrder(),
-            'color' => $this->getColor(),
+            'name' => $this->getName()
         ];
-        return json_encode($data, JSON_PRETTY_PRINT);
     }
 }
 ?>

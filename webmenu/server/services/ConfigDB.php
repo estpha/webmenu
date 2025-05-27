@@ -1,18 +1,16 @@
 <?php
-include_once('ServicesBD.php');
+include_once('ServicesDB.php');
 include_once('../beans/Config.php');
-class ConfigBD
+class ConfigDB
 {
     /**
-     * Méthode appelé pour vérifié si le mdp du login est correct ou non
-     * @param {type} String
-     * @param {type} String
+     * méthode appelé pour vérifié si le mdp du login est correct ou non
      */
     public function checkLogin($pwd)
     {
         $sql = "SELECT password FROM configuration where password = :mdp";
         $params = array("mdp" => $pwd);
-        $connect = ServicesBD::getInstance();
+        $connect = ServicesDB::getInstance();
         $mdpResult = $connect->executeQuery($sql, $params);
         if ($mdpResult->rowCount() == 1) {
             return true;
@@ -22,7 +20,7 @@ class ConfigBD
     }
 
     /**
-     * méthode appelé pour récupérer tous les logins
+     * méthode appelé pour récupérer toutes les configurations
      */
     public function getAll()
     {
@@ -30,7 +28,7 @@ class ConfigBD
         $params = array();
         $count = 0;
         $listeConfigs = array();
-        $connect = ServicesBD::getInstance();
+        $connect = ServicesDB::getInstance();
         $configs = $connect->selectQuery($sql, $params);
         foreach ($configs as $data) {
             $config = new Config(
@@ -53,7 +51,7 @@ class ConfigBD
     }
 
     /**
-     * méthode pour mettre en forme en xml les logins
+     * méthode pour mettre en forme en json
      */
     public function getInJson()
     {

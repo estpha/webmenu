@@ -53,7 +53,17 @@ export class HttpService {
       type: "GET",
       dataType: "json",
       url: MANAGE_URL,
-      data: 'action=getArticlesGestion',
+      data: 'action=getArticles',
+      success: successCallback
+    });
+  }
+
+  afficheGrp(successCallback) {
+    $.ajax({
+      type: "GET",
+      dataType: "json",
+      url: MANAGE_URL,
+      data: 'action=getGroup',
       success: successCallback
     });
   }
@@ -62,7 +72,7 @@ export class HttpService {
     $.ajax({
       type: "POST",
       dataType: "json",
-      url: MANAGE_URL,
+      url: `../${CONFIG_URL}`,
       data: {
         action: 'connect',
         password: passwd,
@@ -76,23 +86,24 @@ export class HttpService {
     $.ajax({
       type: "POST",
       dataType: "json",
-      url: MANAGE_URL,
+      url: `../${CONFIG_URL}`,
       data: 'action=disconnect',
       success: successCallback
     });
   }
 
-  ajouterArticle(description, quantite, prix, groupe, successCallback) {
+  ajouterArticle(description, quantite, prix, groupe, ordre, successCallback) {
     $.ajax({
-      type: "PUT", // Use PUT method for the update
+      type: "PUT",
       url: MANAGE_URL,
-      contentType: "application/json", // Set content-type to JSON
-      data: JSON.stringify({ // Send data as a JSON string
+      contentType: "application/json",
+      data: JSON.stringify({
         action: 'ajoutArticle',
         description: description,
         quantite: quantite,
         prix: prix,
-        groupe: groupe
+        groupe: groupe,
+        ordre: ordre
       }),
       success: successCallback
     });
