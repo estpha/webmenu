@@ -48,17 +48,20 @@ export class HttpService {
     });
   }
 
-  afficheArticlesGestion(successCallback) {
+  afficheArticlesGestion(id, successCallback) {
     $.ajax({
       type: "GET",
       dataType: "json",
       url: MANAGE_URL,
-      data: 'action=getArticles',
+      data: {
+        action: 'getArticles',
+        id: id
+      },
       success: successCallback
     });
   }
 
-  afficheGrp(successCallback) {
+  chargerGrp(successCallback) {
     $.ajax({
       type: "GET",
       dataType: "json",
@@ -104,6 +107,22 @@ export class HttpService {
         prix: prix,
         groupe: groupe,
         ordre: ordre
+      }),
+      success: successCallback
+    });
+  }
+
+  modifierArticle(id, description, order, soldout, successCallback) {
+    $.ajax({
+      type: "PUT",
+      url: MANAGE_URL,
+      contentType: "application/json",
+      data: JSON.stringify({
+        action: 'modifArticle',
+        id: id,
+        description: description,
+        order: order,
+        soldout: soldout
       }),
       success: successCallback
     });

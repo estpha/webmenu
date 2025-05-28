@@ -7,10 +7,10 @@ class ArticleDB
     /**
      * méthode appelé pour récupérer tous les articles
      */
-    public function getAll()
+    public function getArticleByGroup($groupId)
     {
-        $sql = "SELECT * FROM article";
-        $params = array();
+        $sql = "SELECT * FROM article where group_id = :id order by menu_display.article.order";
+        $params = ['id' => $groupId];
         $count = 0;
         $listeArticles = array();
         $connect = ServicesDB::getInstance();
@@ -80,9 +80,9 @@ class ArticleDB
     /**
      * méthode pour mettre en forme en JSON les articles
      */
-    public function getInJson()
+    public function getInJson($groupId)
     {
-        $listeArticles = $this->getAll();
+        $listeArticles = $this->getArticleByGroup($groupId);
         $result = [];
 
         foreach ($listeArticles as $article) {
@@ -114,16 +114,46 @@ class ArticleDB
         $connect = ServicesDB::getInstance();
 
         $sql = "INSERT INTO menu_display.article (description, quantity, price, group_id, menu_display.article.order)
-                values (description, quantite, prix, groupe, ordre)";
+                values (:description, :quantite, :prix, :groupe, :ordre)";
 
-        $params = ['description' => $escapedDescription, 'quantite' => $escapedQuantite, 'prix' => $prix, 'groupe' => $groupe, 'ordre' => $ordre];
+        $params = [
+            'description' => $escapedDescription,
+            'quantite' => $escapedQuantite,
+            'prix' => $prix,
+            'groupe' => $groupe,
+            'ordre' => $ordre
+        ];
+
         $resultat = $connect->executeQuery($sql, $params);
-        if ($resultat) {
-            $data = array('result' => 'true');
-            echo json_encode($data);
+        if ($resultat && $resultat->rowCount() > 0) {
+            return ['result' => 'true'];
         } else {
-            $data = array('result' => 'false');
-            echo json_encode($data);
+            return ['result' => 'false', 'message' => 'No rows inserted'];
+        }
+    }
+
+    public function editArticle($id, $description, $order, $soldout)
+    {
+        $escapedDescription = htmlspecialchars($description, ENT_QUOTES, 'UTF-8');
+
+        $connect = ServicesDB::getInstance();
+
+        $sql = "UPDATE menu_display.article
+                SET description = :description, menu_display.article.order = :order,  soldout = :soldout
+                WHERE id = :id";
+
+        $params = [
+            'id' => $id,
+            'description' => $escapedDescription,
+            'order' => $order,
+            'soldout' => $soldout
+        ];
+
+        $resultat = $connect->executeQuery($sql, $params);
+        if ($resultat && $resultat->rowCount() > 0) {
+            return ['result' => 'true'];
+        } else {
+            return ['result' => 'false', 'message' => 'No rows inserted'];
         }
     }
 }

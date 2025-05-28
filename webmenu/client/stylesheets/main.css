@@ -132,3 +132,14 @@ td {
     display: block;
     /* Ensure no inline-specific spacing */
 }
+
+.hidden {
+    display: none;
+}
+
+img{
+  width: 30px;
+  /* Adjust the size as needed */
+  height: 30px;
+  object-fit: contain;
+}

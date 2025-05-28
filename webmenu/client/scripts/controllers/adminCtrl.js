@@ -11,7 +11,6 @@ $().ready(function () {
  * Classe contrôleur de la page d'accueil de la gestion d'articles.
  */
 export default class AdminCtrl {
-    #listeArticles;
 
     constructor() {
         // initialisation de la variable pour les services http
@@ -48,10 +47,13 @@ export default class AdminCtrl {
     // méthode de connexion appelé pour le login
     connexion(data) {
         // une fois l'utilisateur connecté, l'affichage des articles est appelé        
-        this.http.afficheArticlesGestion((data) => this.chargerArticles(data));
+        // this.http.afficheArticlesGestion((data) => this.chargerArticles(data));
+        this.http.chargerGrp((data) => this.afficheGrp(data));
 
         let btnDeconnex = $("#deconnect");
-        let btnAjout = $("#ajout");
+        let btnAjout = $("#ajout-article");
+        let btnSauverAjout = $("#sauver-article");
+        let btnSauverModif = $("#sauver-modif");
         let champsModifAjout = $("#ajout-et-modif");
 
         // écouteur sur le bouton de deconnexion
@@ -62,26 +64,27 @@ export default class AdminCtrl {
 
         // écouteur sur le bouton d'ajout d'un article
         btnAjout.on("click", () => {
-            // changement de la valeur du bouton d'ajout
-            btnAjout.replaceWith(`<button id="sauverArticle">Sauver l'article</button>`);
-
+            btnAjout.addClass("hidden");
+            btnSauverAjout.removeClass("hidden");
             // ajout au bas de la page des différents champs utiles à l'ajout de l'article
-            let ajoutModif = `
-                <label>Description : </label>
-                <input id="description-ajout" type="text" placeholder="description"/>
-                <label>Quantité : </label>
-                <input id="quantite-ajout" type="text" placeholder="quantité"/>
-                <label>Prix : </label>
-                <input id="prix-ajout" type="text" placeholder="prix"/>
-                <label>Ordre de l'article dans la liste : </label>
-                <input id="ordre-ajout" type="number"/>                
+            let ajout = `
+                <div id="champs-temp">
+                    <label>Description : </label>
+                    <input id="description-ajout" type="text" placeholder="description"/>
+                    <label>Quantité : </label>
+                    <input id="quantite-ajout" type="text" placeholder="quantité"/>
+                    <label>Prix : </label>
+                    <input id="prix-ajout" type="text" placeholder="prix"/>
+                    <label>Ordre de l'article dans la liste : </label>
+                    <input id="ordre-ajout" type="number"/>
+                </div>
             `;
-            champsModifAjout.append(ajoutModif);
+            champsModifAjout.append(ajout);
         });
 
         // écouteur sur le bouton de sauvegarde d'un article
         // appelé comme ça car il a été ajouté dynamiquement
-        $(document).on("click", "#sauverArticle", () => {
+        btnSauverAjout.on("click", () => {
             // récupération des valeurs insérées dans les input et la valeur du groupe sélectionné
             let description = $("#description-ajout").val();
             let quantite = $("#quantite-ajout").val();
@@ -90,73 +93,112 @@ export default class AdminCtrl {
             let groupe = $("#groupes").val();
 
             // appel de la méthode d'ajout dans la base de données
-            this.http.ajouterArticle(description, quantite, prix, groupe, ordre, (data) => this.ajoutArticle(data));
+            this.http.ajouterArticle(description, quantite, prix, groupe, ordre, (data) => this.ajoutArticle(groupe, data));
+        });
+
+        $(document).on("click", "#modifier-article", (event) => {
+            btnAjout.addClass("hidden");
+            btnSauverModif.removeClass("hidden");
+
+            // Get the article ID from the button's data attribute
+            const articleId = $(event.currentTarget).data("id");
+
+            // Traverse the DOM to get the fields in the same row
+            const row = $(event.currentTarget).closest("tr"); // Get the closest table row
+            const order = row.find(".ordre").text(); // Find the order
+            const soldout = row.find(".ordre").data("soldout") === 1; // Convert to boolean
+            const description = row.find(".description").text(); // Find the description
+
+            console.log(order);
+            console.log(soldout);
+            console.log(description);
+            console.log(articleId);
+
+            // Use this data to populate a form or perform any other action
+            let modif = `
+                        <div id="champs-temp">
+                            <label>Ordre de l'article dans la liste : </label>
+                            <input id="ordre-modif" type="number" data-id="${articleId}" value="${order}"/>
+                            <label>Description : </label>
+                            <input id="description-modif" type="text" placeholder="description" value="${description}"/>                    
+                            <label>Soldout : </label>
+                            <input id="soldout-modif" type="checkbox" ${soldout ? "checked" : ""}/>
+                        </div>`;
+            champsModifAjout.append(modif);
+        });
+
+
+        btnSauverModif.on("click", () => {
+            let description = $("#description-modif").val();
+            let ordre = $("#ordre-modif").val();
+            let soldout = $("#soldout-modif").isChecked();
+            let id = $("#ordre-modif").data("id");
+
+            console.log(description);
+            console.log(ordre);
+            console.log(soldout);
+            console.log(id);
+
+            this.http.modifierArticle(id, ordre, description, soldout, (data) => this.chargerArticles(data));
         });
 
     }
 
-    chargerGrp(data) {
-        console.log(data);
+    afficheGrp(data) {
+        if (Object.keys(data).length == 0) {
+            // mettre toasty infos
+            return;
+        }
+
         const listeGroupes = $("#groupes");
         listeGroupes.empty(); // Clear the existing options
 
         // Default to the first group in the data
         const firstGroup = data[0]?.id; // Use the first group's ID if it exists
-        const defaultGroupId = firstGroup || null; // Fallback to null if no groups
-
         // Populate the select with group options
         data.forEach((group) => {
-            let isSelected = group.id === defaultGroupId ? "selected" : ""; // Mark the default group as selected
+            // let isSelected = group.id === defaultGroupId ? "selected" : ""; // Mark the default group as selected
+            let isSelected = group.id;
             let optionHtml = `<option value="${group.id}" ${isSelected}>${group.name}</option>`;
             listeGroupes.append(optionHtml);
         });
 
-        // Set the dropdown value to the default group
-        if (defaultGroupId) {
-            listeGroupes.val(defaultGroupId);
-        }
-
-        // Load articles for the default group
-        if (defaultGroupId) {
-            this.chargerArticlesParGrp(defaultGroupId);
-        }
-
-        // Add an event listener to fetch articles when a group is selected
         listeGroupes.on("change", () => {
             const selectedGroupId = listeGroupes.val(); // Get the selected group's ID
-            this.chargerArticlesParGrp(selectedGroupId);
+            this.http.afficheArticlesGestion(selectedGroupId, (data) => this.chargerArticles(data));
         });
+
+        // Load articles for the first group by default
+        this.http.afficheArticlesGestion(firstGroup, (data) => this.chargerArticles(data));
     }
 
 
 
     chargerArticles(data) {
-        this.#listeArticles = data;
-        this.http.afficheGrp((data) => this.chargerGrp(data));
-    }
+        if (Object.keys(data).length == 0) {
+            // mettre toasty infos
+            return;
+        }
 
-    chargerArticlesParGrp(groupId) {
         const listeArticlesVue = $("#listeArticlesModif");
         listeArticlesVue.empty();
 
-        // If a groupId is provided, filter articles based on it; otherwise, show all articles
-        const filteredArticles = groupId
-            ? this.#listeArticles.filter(article => article.group === groupId)
-            : this.#listeArticles;
-
-        // Populate the list of articles
-        filteredArticles.forEach((article) => {
+        data.forEach((article) => {
             const articleHtml = `
             <tr class="menu-item">            
-                <td class="article-et-quantite">
-                    <span class="ordre">${article.order}</span>
+                <td class="article-et-ordre-et-quantite">
+                    <span class="ordre" data-soldout="${article.soldout}">${article.order}</span>
                     <span class="description">${article.description}</span>
                     <span class="quantite">${article.quantity}</span>
                 </td>    
                 <td class="price-et-separateur">
                     <hr class="separateur">
                     <span class="price">${article.price}</span>
-                </td>                    
+                </td>
+                <td class="suppression">
+                    <button id="supprimer-article" data-id="${article.id}"><img src="../images/bin.png" alt="bin.png"></button>
+                    <button id="modifier-article" data-id="${article.id}"><img src="../images/edit.png" alt="edit.png"></button>
+                </td>                   
             </tr>`;
             listeArticlesVue.append(articleHtml);
         });
@@ -167,12 +209,16 @@ export default class AdminCtrl {
         location.replace("../index.html");
     }
 
-    ajoutArticle(data) {
-        // à faire
-        if (data) {
-            console.log("Ajout OK");
-        } else {
-            console.log("Ajout KO");
-        }
+    ajoutArticle(group, data) {
+
+        let btnAjout = $("#ajout-article");
+        let btnSauverAjout = $("#sauver-article");
+
+        btnSauverAjout.addClass("hidden");
+        btnAjout.removeClass("hidden");
+
+        $(document).find(`#champs-temp`).remove();
+
+        this.http.afficheArticlesGestion(group, (data) => this.chargerArticles(data));
     }
 }
