@@ -48,6 +48,16 @@ export class HttpService {
     });
   }
 
+  getConfAdmin(successCallback) {
+    $.ajax({
+      type: "GET",
+      dataType: "json",
+      url: `../${CONFIG_URL}`,
+      data: 'action=getConf',
+      success: successCallback
+    });
+  }
+
   afficheArticlesGestion(id, successCallback) {
     $.ajax({
       type: "GET",
@@ -128,4 +138,17 @@ export class HttpService {
     });
   }
 
+
+  supprimerArticle(id, successCallback) {
+    $.ajax({
+      type: "DELETE",
+      url: MANAGE_URL,
+      contentType: "application/json",
+      data: JSON.stringify({
+        action: 'suppArticle',
+        id: id
+      }),
+      success: successCallback
+    });
+  }
 }

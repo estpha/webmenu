@@ -54,6 +54,21 @@ if (isset($_SERVER['REQUEST_METHOD'])) {
         }
       }
     }
+    if ($_SERVER['REQUEST_METHOD'] == 'DELETE') {
+
+      $data = json_decode(file_get_contents("php://input"), true);
+
+      if (isset($data['action']) && $data['action'] === 'suppArticle') {
+        $suppArticle = new ArticleDB();
+        $result = $suppArticle->deleteArticle($data['id']);
+
+        if (isset($result['result']) && $result['result'] === 'true') {
+          echo json_encode($result); // Send the result back as a JSON response
+        } else {
+          http_response_code(503); // Service Unavailable (if result is not true)
+        }
+      }
+    }
   } else {
     http_response_code(401);
   }

@@ -11,6 +11,7 @@ $().ready(function () {
  * Classe contrôleur de la page d'accueil de la gestion d'articles.
  */
 export default class AdminCtrl {
+    #uniteDArgent;
 
     constructor() {
         // initialisation de la variable pour les services http
@@ -23,10 +24,11 @@ export default class AdminCtrl {
 
     // méthode d'initialisation de la classe
     init() {
+        this.http.getConfAdmin((data) => this.chargerConfig(data));
         // popup de login pour accéder à la page
         Swal.fire({
             title: "Entrer le mot de passe :",
-            input: "text",
+            input: "password",
             inputAttributes: {
                 autocapitalize: "off"
             },
@@ -54,6 +56,7 @@ export default class AdminCtrl {
         let btnAjout = $("#ajout-article");
         let btnSauverAjout = $("#sauver-article");
         let btnSauverModif = $("#sauver-modif");
+        let btnAnnuler = $("#annuler");
         let champsModifAjout = $("#ajout-et-modif");
 
         // écouteur sur le bouton de deconnexion
@@ -64,8 +67,13 @@ export default class AdminCtrl {
 
         // écouteur sur le bouton d'ajout d'un article
         btnAjout.on("click", () => {
+            $(".modifier-article").prop("disabled", true);
+            $(".supprimer-article").prop("disabled", true);
+            $("#groupes").prop("disabled", true);
+
             btnAjout.addClass("hidden");
             btnSauverAjout.removeClass("hidden");
+            btnAnnuler.removeClass("hidden");
             // ajout au bas de la page des différents champs utiles à l'ajout de l'article
             let ajout = `
                 <div id="champs-temp">
@@ -96,23 +104,47 @@ export default class AdminCtrl {
             this.http.ajouterArticle(description, quantite, prix, groupe, ordre, (data) => this.ajoutArticle(groupe, data));
         });
 
-        $(document).on("click", "#modifier-article", (event) => {
+        $(document).on("click", ".supprimer-article", (event) => {
+            const row = $(event.currentTarget).closest("tr");
+
+            const description = row.find(".description").text();
+
+            const articleId = $(event.currentTarget).data("id");
+            let groupe = $("#groupes").val();
+
+            Swal.fire({
+                title: "ATTENTION",
+                text: "Êtes-vous sûr de vouloir supprimer l'article " + description,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Oui",
+                cancelButtonText: "Non",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    this.http.supprimerArticle(articleId, (data) => this.suppArticle(groupe, data));
+                }
+            });
+        });
+
+        $(document).on("click", ".modifier-article", (event) => {
+            $(".modifier-article").prop("disabled", true);
+            $(".supprimer-article").prop("disabled", true);
             btnAjout.addClass("hidden");
             btnSauverModif.removeClass("hidden");
+            btnAnnuler.removeClass("hidden");
+
+            $("#groupes").prop("disabled", true);
 
             // Get the article ID from the button's data attribute
             const articleId = $(event.currentTarget).data("id");
-
+            // Find the row containing the button
+            const row = $(event.currentTarget).closest("tr");
             // Traverse the DOM to get the fields in the same row
-            const row = $(event.currentTarget).closest("tr"); // Get the closest table row
-            const order = row.find(".ordre").text(); // Find the order
-            const soldout = row.find(".ordre").data("soldout") === 1; // Convert to boolean
-            const description = row.find(".description").text(); // Find the description
-
-            console.log(order);
-            console.log(soldout);
-            console.log(description);
-            console.log(articleId);
+            const order = row.find(".ordre").text();
+            const description = row.find(".description").text();
+            const soldout = row.find(".ordre").data("soldout") === 1;
 
             // Use this data to populate a form or perform any other action
             let modif = `
@@ -131,17 +163,32 @@ export default class AdminCtrl {
         btnSauverModif.on("click", () => {
             let description = $("#description-modif").val();
             let ordre = $("#ordre-modif").val();
-            let soldout = $("#soldout-modif").isChecked();
+            let soldout = $("#soldout-modif").prop("checked");
             let id = $("#ordre-modif").data("id");
+            let groupe = $("#groupes").val();
+            $("#groupes").prop("disabled", false);
 
-            console.log(description);
-            console.log(ordre);
-            console.log(soldout);
-            console.log(id);
+            if (soldout) {
+                soldout = 1;
+            } else {
+                soldout = 0;
+            }
 
-            this.http.modifierArticle(id, ordre, description, soldout, (data) => this.chargerArticles(data));
+            this.http.modifierArticle(id, description, ordre, soldout, (data) => this.modifArticle(groupe, data));
         });
 
+        btnAnnuler.on("click", () => {
+            btnSauverAjout.addClass("hidden");
+            btnSauverModif.addClass("hidden");
+            btnAnnuler.addClass("hidden");
+            btnAjout.removeClass("hidden");
+            $("#groupes").prop("disabled", false);
+
+            $(".modifier-article").prop("disabled", false);
+            $(".supprimer-article").prop("disabled", false);
+
+            $(document).find(`#champs-temp`).remove();
+        });
     }
 
     afficheGrp(data) {
@@ -172,34 +219,31 @@ export default class AdminCtrl {
         this.http.afficheArticlesGestion(firstGroup, (data) => this.chargerArticles(data));
     }
 
-
-
     chargerArticles(data) {
         if (Object.keys(data).length == 0) {
             // mettre toasty infos
             return;
         }
-
         const listeArticlesVue = $("#listeArticlesModif");
         listeArticlesVue.empty();
 
+
         data.forEach((article) => {
             const articleHtml = `
-            <tr class="menu-item">            
-                <td class="article-et-ordre-et-quantite">
-                    <span class="ordre" data-soldout="${article.soldout}">${article.order}</span>
-                    <span class="description">${article.description}</span>
-                    <span class="quantite">${article.quantity}</span>
-                </td>    
-                <td class="price-et-separateur">
-                    <hr class="separateur">
-                    <span class="price">${article.price}</span>
-                </td>
-                <td class="suppression">
-                    <button id="supprimer-article" data-id="${article.id}"><img src="../images/bin.png" alt="bin.png"></button>
-                    <button id="modifier-article" data-id="${article.id}"><img src="../images/edit.png" alt="edit.png"></button>
-                </td>                   
-            </tr>`;
+                <tr>                        
+                    <td class="ordre" data-soldout="${article.soldout}">${article.order}</td>
+                    <td class="description">${article.description}</td>
+                    <td class="quantite">${article.quantity}</td>
+                    <td class="price">${article.price} ${this.#uniteDArgent}</td>
+                    <td class="suppression-modification">
+                        <button class="supprimer-article" data-id="${article.id}">
+                            <img src="../images/bin.png" alt="Delete">
+                        </button>
+                        <button class="modifier-article" data-id="${article.id}">
+                            <img src="../images/edit.png" alt="Edit">
+                        </button>
+                    </td>
+                </tr>`;
             listeArticlesVue.append(articleHtml);
         });
     }
@@ -210,15 +254,96 @@ export default class AdminCtrl {
     }
 
     ajoutArticle(group, data) {
+        if (data) {
+            Swal.fire({
+                title: "L'article a été ajouté",
+                icon: "success",
+                timer: 800,
+                showConfirmButton: false
+            });
+        } else {
+            Swal.fire({
+                title: "Une erreur est survenu lors de l'ajout'",
+                icon: "error",
+                timer: 800,
+                showConfirmButton: false
+            });
+        }
 
         let btnAjout = $("#ajout-article");
         let btnSauverAjout = $("#sauver-article");
+        let btnAnnuler = $("#annuler");
 
+        btnAnnuler.addClass("hidden");
         btnSauverAjout.addClass("hidden");
         btnAjout.removeClass("hidden");
 
         $(document).find(`#champs-temp`).remove();
 
         this.http.afficheArticlesGestion(group, (data) => this.chargerArticles(data));
+    }
+
+    modifArticle(groupe, data) {
+        if (data) {
+            Swal.fire({
+                title: "L'article a été modifié",
+                icon: "success",
+                timer: 800,
+                showConfirmButton: false
+            });
+        } else {
+            Swal.fire({
+                title: "Une erreur est survenu lors de la modification",
+                icon: "error",
+                timer: 800,
+                showConfirmButton: false
+            });
+        }
+        let btnAjout = $("#ajout-article");
+        let btnSauverModif = $("#sauver-modif");
+        let btnAnnuler = $("#annuler");
+
+        btnAnnuler.addClass("hidden");
+        btnSauverModif.addClass("hidden");
+        btnAjout.removeClass("hidden");
+
+        $(document).find(`#champs-temp`).remove();
+        this.http.afficheArticlesGestion(groupe, (data) => this.chargerArticles(data));
+    }
+
+    suppArticle(groupe, data) {
+        if (data) {
+            Swal.fire({
+                title: "L'article a été supprimé",
+                icon: "success",
+                timer: 800,
+                showConfirmButton: false
+            });
+        } else {
+            Swal.fire({
+                title: "Une erreur est survenu lors de la suppre",
+                icon: "error",
+                timer: 800,
+                showConfirmButton: false
+            });
+        }
+
+        this.http.afficheArticlesGestion(groupe, (data) => this.chargerArticles(data));
+    }
+
+    chargerConfig(data, text, jqXHR) {
+        // analyse des données reçues, conversion JSON si besoin
+        let parsedData = typeof data === "string" ? JSON.parse(data) : data;
+
+        // vérification si les données analysées sont un tableau
+        if (Array.isArray(parsedData)) {
+            parsedData.forEach(item => {
+                // mise à jour des propriétés depuis chaque élément du tableau
+                this.#uniteDArgent = item.moneyUnity; // unité monétaire
+            });
+        } else {
+            // si ce n'est pas un tableau, on suppose qu'il s'agit d'un objet unique
+            this.#uniteDArgent = parsedData.moneyUnity; // unité monétaire
+        }
     }
 }

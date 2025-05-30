@@ -4,185 +4,218 @@ const MD5 = function (d) { var r = M(V(Y(X(d), 8 * d.length))); return r.toLower
 let indexCtrl; // déclaration de la variable globale
 
 $().ready(function () {
-    // initialisation de la variable globale
-    indexCtrl = new IndexCtrl();
+  // initialisation de la variable globale
+  indexCtrl = new IndexCtrl();
 });
 
 /**
  * Classe contrôleur de la page d'accueil de l'affichage du menu.
  */
 export default class IndexCtrl {
-    // variables privées utiles à la récupération des infos de la configuration
-    #uniteDArgent;
-    #rechargementPage;
-    #empreinteMD5 = "";
+  // variables privées utiles à la récupération des infos de la configuration
+  #uniteDArgent;
+  #rechargementPage;
+  #empreinteMD5 = "";
 
-    constructor() {
-        // initialisation de la variable pour les services http
-        this.http = new HttpService();
-        // appel de la méthode pour la gestion des erreurs
-        this.http.centraliserErreurHttp((msg) => this.afficherErreurHttp(msg));
-        // appel de la méthode d'initialisation de la classe
-        this.init();
+  constructor() {
+    // initialisation de la variable pour les services http
+    this.http = new HttpService();
+    // appel de la méthode pour la gestion des erreurs
+    this.http.centraliserErreurHttp((msg) => this.afficherErreurHttp(msg));
+    // appel de la méthode d'initialisation de la classe
+    this.init();
+  }
+
+  init() {
+    // GET de la configuration de la BD
+    this.http.getConf((data) => this.chargerConfig(data));
+  }
+
+  afficherErreurHttp(msg) {
+    alert(msg);
+  }
+
+
+  chargerArticles(config, data) {
+    // création d'une empreinte md5 pour vérifier si les données on été modifiées
+    let md5 = MD5(JSON.stringify(data));
+
+    let couleurPoliceGrp = null;
+    let couleurPoliceArt = null;
+
+    // test de l'empreinte pour voir si elle a changé
+    if (md5 == this.#empreinteMD5) {
+      return;
     }
+    // si l'empreinte a changé, la variable privée empreinte est modifié pour correspondre à la nouvelle empreinte
+    this.#empreinteMD5 = md5;
 
-    init() {
-        // GET de la configuration de la BD
-        this.http.getConf((data) => this.chargerConfig(data));
-    }
+    let listeArticles = $("#listeArticles");
 
-    afficherErreurHttp(msg) {
-        alert(msg);
-    }
+    // vidage de la liste des articles
+    listeArticles.empty();
+
+    // organisation des groupes par page
+    // initialisation d'un objet pour regrouper les groupes par numéro de page
+    let pagesGroupedByOrder = {};
+
+    // parcours de chaque groupe dans les données fournies
+    Object.keys(data).forEach(groupName => {
+      const { ordrePage, ordreGroup, couleurGroup, articles } = data[groupName]; // extraction des données utiles
+
+      // si aucun groupe n'existe encore pour cette page, initialiser un tableau vide
+      if (!pagesGroupedByOrder[ordrePage]) {
+        pagesGroupedByOrder[ordrePage] = [];
+      }
+
+      // ajout du groupe actuel dans le tableau correspondant à la page
+      pagesGroupedByOrder[ordrePage].push({
+        // nom du groupe
+        groupName,
+        // convertion de l'ordre en nombre pour un tri correct
+        groupOrder: parseInt(ordreGroup, 10),
+
+        couleurGroup,
+        // articles correspondant à ce groupe
+        articles
+      });
+    });
 
 
-    chargerArticles(data, text, jqXHR) {
-        // création d'une empreinte md5 pour vérifier si les données on été modifiées
-        let md5 = MD5(JSON.stringify(data));
 
-        // test de l'empreinte pour voir si elle a changé
-        if (md5 == this.#empreinteMD5) {
-            return;
-        }
-        // si l'empreinte a changé, la variable privée empreinte est modifié pour correspondre à la nouvelle empreinte
-        this.#empreinteMD5 = md5;
+    // parcours des pages dans l'ordre croissant
+    Object.keys(pagesGroupedByOrder)
+      .sort((pageA, pageB) => pageA - pageB) // tri des pages par ordre croissant
+      .forEach(pageOrder => {
 
-        let listeArticles = $("#listeArticles");
+        // tri des groupes dans chaque page par ordre croissant
+        pagesGroupedByOrder[pageOrder].sort((groupA, groupB) => groupA.groupOrder - groupB.groupOrder);
 
-        // vidage de la liste des articles
-        listeArticles.empty();
+        // création d'un conteneur pour la section de la page
+        let pageSection = $(`<div class="page-section" data-ordre-page="${pageOrder}"></div>`);
 
-        // organisation des groupes par page
-        // initialisation d'un objet pour regrouper les groupes par numéro de page
-        let pagesGroupedByOrder = {};
+        // parcours des groupes de la page
+        pagesGroupedByOrder[pageOrder].forEach(group => {
+          const { groupName, couleurGroup, articles } = group;
+          // Debug to verify color value
+          // console.log(`Group Name: ${groupName}, Color: ${couleurGroup}`);
+          // <h2 style="color: ${couleurGroup};">${groupName}</h2>
 
-        // parcours de chaque groupe dans les données fournies
-        Object.keys(data).forEach(groupName => {
-            const { ordrePage, ordreGroup, articles } = data[groupName]; // extraction des données utiles
+          if (couleurGroup === null) {
+            couleurPoliceGrp = config[0].groupColor;
+          } else {
+            couleurPoliceGrp = couleurGroup;
+          }
 
-            // si aucun groupe n'existe encore pour cette page, initialiser un tableau vide
-            if (!pagesGroupedByOrder[ordrePage]) {
-                pagesGroupedByOrder[ordrePage] = [];
+          
+          let groupSection = `
+          <div class="menu-section" data-ordre-page="${pageOrder}" data-ordre-group="${group.groupOrder}">
+              <h2 style="
+              color: ${couleurPoliceGrp};
+              font-family:${config[0].groupFont};
+              font-size:${config[0].groupSize}px;
+              ">
+                ${groupName}
+              </h2>
+              <table class="menu-items"></table>
+          </div>`;
+
+          let groupElement = $(groupSection);
+          let menuItemsContainer = groupElement.find(".menu-items");
+
+          articles.forEach(article => {
+            if (article.color === null) {
+              couleurPoliceArt = config[0].articleColor;
+            } else {
+              couleurPoliceArt = article.color;
             }
 
-            // ajout du groupe actuel dans le tableau correspondant à la page
-            pagesGroupedByOrder[ordrePage].push({
-                // nom du groupe
-                groupName,
-                // convertion de l'ordre en nombre pour un tri correct
-                groupOrder: parseInt(ordreGroup, 10),
-                // articles correspondant à ce groupe
-                articles
-            });
+            // <tr class="menu-item" style="color: ${couleurPoliceArt};">
+            // pas possible d'ajouter css avec classe sinon dernière liste articles affiche pas la couleur correcte --> articles ajouter dynamiquement
+            let articleHtml = `
+            <tr class="menu-item"
+              style="
+                    font-size: ${config[0].articleSize}px;
+                    color: ${couleurPoliceArt};
+                    font-family: ${config[0].articleFont};                    
+                    "
+            >
+                <td class="article-et-quantite">
+                    <span class="description" >
+                      ${article.description}
+                    </span>
+                    <span class="quantite">${article.quantity}</span>
+                </td>
+                <td class="price-et-separateur">
+                    <hr class="separateur">
+                    <span class="price">${article.price} ${config[0].moneyUnity}</span>
+                </td>
+            </tr>`;
+            $(articleHtml).appendTo(menuItemsContainer);
+          });
+
+          groupElement.appendTo(pageSection);
         });
 
 
+        // ajout de la section de la page à la liste des articles
+        pageSection.appendTo(listeArticles);
+      });
 
-        // parcours des pages dans l'ordre croissant
-        Object.keys(pagesGroupedByOrder)
-            .sort((pageA, pageB) => pageA - pageB) // tri des pages par ordre croissant
-            .forEach(pageOrder => {
+    // démarrage de l'animation
+    this.demarrageAnim();
 
-                // tri des groupes dans chaque page par ordre croissant
-                pagesGroupedByOrder[pageOrder].sort((groupA, groupB) => groupA.groupOrder - groupB.groupOrder);
+  }
 
-                // création d'un conteneur pour la section de la page
-                let pageSection = $(`<div class="page-section" data-ordre-page="${pageOrder}"></div>`);
+  demarrageAnim() {
+    const listeArticles = $("#listeArticles");
 
-                // parcours des groupes de la page
-                pagesGroupedByOrder[pageOrder].forEach(group => {
-                    // déstructuration pour accéder aux données du groupe
-                    const { groupName, articles } = group;
-
-                    // création de la section HTML pour le groupe
-                    let groupSection = `
-                <div class="menu-section" data-ordre-page="${pageOrder}" data-ordre-group="${group.groupOrder}">
-                    <h2>${groupName}</h2>
-                    <table class="menu-items"></table>
-                </div>`;
-                    let groupElement = $(groupSection); // conversion en élément jQuery
-                    let menuItemsContainer = groupElement.find(".menu-items"); // Sélection du conteneur pour les articles
-
-                    // parcours des articles du groupe
-                    articles.forEach(article => {
-                        // génération du HTML pour chaque article
-                        let articleHtml = `
-                    <tr class="menu-item">            
-                        <td class="article-et-quantite">
-                            <span class="description">${article.description}</span>
-                            <span class="quantite">${article.quantity}</span>
-                        </td>    
-                        <td class="price-et-separateur">
-                            <hr class="separateur">
-                            <span class="price">${article.price} ${this.#uniteDArgent}</span>
-                        </td>                    
-                    </tr>`;
-                        $(articleHtml).appendTo(menuItemsContainer); // ajout de l'article au conteneur
-                    });
-
-                    // ajout de la section du groupe à la section de la page
-                    groupElement.appendTo(pageSection);
-                });
-
-                // ajout de la section de la page à la liste des articles
-                pageSection.appendTo(listeArticles);
-            });
-
-        // démarrage de l'animation
-        this.demarrageAnim();
-
+    // destruction de toute instance éxistante de slick
+    if (listeArticles.hasClass("slick-initialized")) {
+      listeArticles.slick("unslick");
     }
 
-    demarrageAnim() {
-        const listeArticles = $("#listeArticles");
+    // réinitialisation de l'animation
+    listeArticles.slick({
+      slidesToShow: 1,
+      slidesToScroll: 1,
+      autoplay: true,
+      autoplaySpeed: this.#rechargementPage,
+      speed: 800
+    }).on('afterChange', (event, slick, currentSlide) => {
+      // check si la slide correspond à la dernière
+      if (currentSlide === slick.slideCount - 1) {
+        setTimeout(() => {
+          this.resetAndReload(); // appel de la méthode pour recharger la configuration et les articles
+        }, this.#rechargementPage); // ajustement du timeout pour correspondre aux autres timeout
+      }
+    });
+  }
 
-        // destruction de toute instance éxistante de slick
-        if (listeArticles.hasClass("slick-initialized")) {
-            listeArticles.slick("unslick");
-        }
+  resetAndReload() {
+    this.init(); // rechargement des données
+  }
 
-        // réinitialisation de l'animation
-        listeArticles.slick({
-            slidesToShow: 1,
-            slidesToScroll: 1,
-            autoplay: true,
-            autoplaySpeed: this.#rechargementPage,
-            speed: 800
-        }).on('afterChange', (event, slick, currentSlide) => {
-            // check si la slide correspond à la dernière
-            if (currentSlide === slick.slideCount - 1) {
-                setTimeout(() => {
-                    this.resetAndReload(); // appel de la méthode pour recharger la configuration et les articles
-                }, this.#rechargementPage); // ajustement du timeout pour correspondre aux autres timeout
-            }
-        });
+
+
+  chargerConfig(data) {
+    let config = data;
+    // analyse des données reçues, conversion JSON si besoin
+    let parsedData = typeof data === "string" ? JSON.parse(data) : data;
+
+    // vérification si les données analysées sont un tableau
+    if (Array.isArray(parsedData)) {
+      parsedData.forEach(item => {
+        // mise à jour des propriétés depuis chaque élément du tableau
+        this.#rechargementPage = item.refreshTime; // temps de rafraîchissement
+      });
+    } else {
+      // si ce n'est pas un tableau, on suppose qu'il s'agit d'un objet unique
+      this.#rechargementPage = parsedData.refreshTime; // temps de rafraîchissement
     }
 
-    resetAndReload() {
-        this.init(); // rechargement des données
-    }
-
-
-
-    chargerConfig(data, text, jqXHR) {
-        // analyse des données reçues, conversion JSON si besoin
-        let parsedData = typeof data === "string" ? JSON.parse(data) : data;
-
-        // vérification si les données analysées sont un tableau
-        if (Array.isArray(parsedData)) {
-            parsedData.forEach(item => {
-                // mise à jour des propriétés depuis chaque élément du tableau
-                this.#uniteDArgent = item.moneyUnity; // unité monétaire
-                this.#rechargementPage = item.refreshTime; // temps de rafraîchissement
-            });
-        } else {
-            // si ce n'est pas un tableau, on suppose qu'il s'agit d'un objet unique
-            this.#uniteDArgent = parsedData.moneyUnity; // unité monétaire
-            this.#rechargementPage = parsedData.refreshTime; // temps de rafraîchissement
-        }
-
-        // appel de la méthode pour charger les articles
-        this.http.afficheArticlesParGroup((data) => this.chargerArticles(data));
-    }
+    // appel de la méthode pour charger les articles
+    this.http.afficheArticlesParGroup((data) => this.chargerArticles(config, data));
+  }
 
 }
