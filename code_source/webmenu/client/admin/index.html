@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+  <title>Gestion des articles</title>
+  <meta charset="UTF-8">
+  <!-- <link rel="stylesheet" type="text/css" href="../stylesheets/main.css" /> -->
+  <link rel="stylesheet" type="text/css" href="../stylesheets/admin.css" />
+  <script type="text/javascript" src="../lib/jquery-3.7.1.min.js"></script>
+  <script src="../lib/sweetAlert2.min.js"></script>
+  <script type="module" src="../scripts/controllers/adminCtrl.js" defer></script>
+</head>
+
+<body>
+  <div class="conteneur">
+    <h1>Gestionnaire des articles</h1>
+    <div class="header">
+      <select name="groupe" id="groupes"></select>
+      <button id="deconnect">Déconnexion</button>
+    </div>
+    <table class="menu">
+      <thead>
+        <tr class="header-menu">
+          <th>Disponibilité</th>
+          <th>Ordre</th>
+          <th>Article</th>
+          <th>Quantité</th>
+          <th>Prix</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="listeArticlesModif">
+        <!-- Dynamically added rows will go here -->
+      </tbody>
+    </table>
+    <div class="conteneur-ajout-et-modif">
+      <div class="header">
+        <button id="ajout-article">Ajouter un article</button>
+        <button id="sauver-article" class="hidden">Sauver l'article</button>
+        <button id="sauver-modif" class="hidden">Sauver les modifications</button>
+        <button id="annuler" class="hidden">Annuler</button>
+      </div>
+      <div id="ajout-et-modif"></div>
+    </div>
+  </div>
+</body>
+
+</html>
